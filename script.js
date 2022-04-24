@@ -1,9 +1,9 @@
 // TODO:
-// - get contract balance
-// - send all contract money to me
+// + get contract balance
+// + send all contract money to me
 // - create get grid method in contract
 // - deploy new contract
-// - inject new contract here
+// - inject new contract
 // - display grid
 // - show pixel info on hover
 // - current x:y position
@@ -22,15 +22,15 @@ async function loadUser(accounts) {
   console.log({ account });
 
   document.getElementById('account').innerHTML = `Account: ${account}`;
-  // const accountBalance = await web3.eth.getBalance(account);
-  const accountBalance = await window.ethereum;
-  document.getElementById('balance').innerHTML = `Balance: ${accountBalance}`;
+  const accountBalance = await web3.eth.getBalance(account);
+  const balanceInEth = web3.utils.fromWei(accountBalance, 'ether');
+  document.getElementById('balance').innerHTML = `Balance: ${balanceInEth}`;
 
   contract = new web3.eth.Contract(abi, cAddr);
 
   //console.log(contract);
 
-  //console.log(contract.methods);
+  console.log(contract.methods);
 
   //console.log(await contract.methods.grid(0, 0).call());
 }
@@ -49,6 +49,8 @@ window.onload = async function () {
         method: 'eth_requestAccounts'
       });
       loadUser(accounts);
+
+      setupUI();
     } catch (error) {
       console.error(error);
     }
@@ -79,8 +81,26 @@ async function buyPixel(x, y, color, message) {
   }
 }
 
-for (let x = 0; x < 100; x++) {
-  for (let y = 0; y < 100; y++) {
+async function getContractBalance() {
+  const contractBalance = await contract.methods.getBalance().call({ from: account });
+  const contractBalanceInEth = web3.utils.fromWei(contractBalance);
+  alert(`Current contract balance is ${contractBalanceInEth} ETH`);
+}
+
+async function withdrawContractBalance() {
+  await contract.methods.getBalance().send({ from: account });
+}
+
+function setupUI() {
+  const getContractBalanceBtn = document.getElementById('getContractBalance');
+  getContractBalanceBtn.addEventListener('click', getContractBalance);
+
+  const withdrawContractBalanceBtn = document.getElementById('withdrawContractBalance');
+  withdrawContractBalanceBtn.addEventListener('click', withdrawContractBalance);
+}
+
+for (let y = 0; y < 100; y++) {
+  for (let x = 0; x < 100; x++) {
     const pixel = document.createElement('div');
     pixel.style = `background-color: rgb(${x * 2}, 0, 0);`;
     pixel.className = 'pixel';
