@@ -38,6 +38,22 @@ contract MillionPixelsCanvas {
     owner = msg.sender;
   }
 
+  function getGrid() public view returns(Pixel[][] memory) {
+    Pixel[][] memory yGrid = new Pixel[][](canvasSize);
+
+    for (uint16 y = 0; y < canvasSize; y++) {
+      Pixel[] memory xGrid = new Pixel[](canvasSize);
+
+      for (uint16 x = 0; x < canvasSize; x++) {
+        xGrid[x] = grid[x][y];
+      }
+
+      yGrid[y] = xGrid;
+    }
+
+    return yGrid;
+  }
+
   function getPixelPrice(Position memory _position) public view returns(uint256) {
     uint256 pixelPrice = minimalPixelPrice;
     
