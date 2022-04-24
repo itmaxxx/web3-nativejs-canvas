@@ -5,8 +5,8 @@
 // + deploy new contract
 // + inject new contract
 // + display grid
-// - show pixel info on hover
-// - current x:y position
+// + show pixel info on hover
+// + current x:y position
 // - listen for buy event
 // - update user account balance
 
@@ -145,4 +145,16 @@ async function setupGrid() {
 
 function showPixelInfo(x, y) {
   pixelInfo.innerHTML = `${x}:${y} color: ${grid[x][y].color} with message ${grid[x][y].message}`;
+}
+
+function displayPalette() {
+  for (let i = 0; i < palette.length; i++) {
+    const pixel = document.createElement('div');
+    pixel.style = `background-color: ${palette[i]};`;
+    pixel.className = 'palette_color';
+    pixel.addEventListener('click', function () {
+      console.log('Selected color', palette[i]);
+    });
+    paletteDiv.appendChild(pixel);
+  }
 }
