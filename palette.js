@@ -255,4 +255,4 @@ const palette = [
   '#ff8cff',
   '#ff8cdb',
   '#ffffff'
-];
+].reverse();

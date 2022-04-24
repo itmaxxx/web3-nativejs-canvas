@@ -9,14 +9,16 @@
 // + current x:y position
 // - listen for buy event
 // - update user account balance
+// - fix get grid coords
 
 const root = document.getElementById('root');
 
 const web3 = new Web3('https://rinkeby.infura.io/v3/94945f550e5c495ba9710ba0d0cffc7e');
-const cAddr = '0x9938df4770da10B8CE49263A70400cfb0eF3A723';
+const cAddr = '0x6dC5D34e7A872b3c3ff60403f4DC87c5F4409733';
 let contract = null;
 let account = null;
 let grid = null;
+let selectedColor = 0;
 
 // Contants
 const PIXEL_SIZE = 10;
@@ -65,9 +67,10 @@ window.onload = async function () {
   }
 };
 
-async function buyPixel(x, y, color, message) {
+async function buyPixel(x, y) {
   try {
-    const data = await contract.methods.buyPixel([x, y], color, message).encodeABI();
+    const message = prompt('Enter message you would like to share');
+    const data = await contract.methods.buyPixel([x, y], selectedColor, message).encodeABI();
     console.log('buyPixel data', data);
 
     window.ethereum
@@ -77,7 +80,7 @@ async function buyPixel(x, y, color, message) {
           {
             from: account,
             to: cAddr,
-            value: web3.utils.toWei('0.00000001', 'ether'),
+            value: web3.utils.toWei('0.00000000000001', 'ether'),
             data
           }
         ]
@@ -117,6 +120,7 @@ function setupUI() {
 
 async function loadGrid() {
   const grid = await contract.methods.getGrid().call();
+  console.log(grid);
   return grid;
 }
 
@@ -124,10 +128,10 @@ function renderGrid(grid) {
   for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid.length; x++) {
       const pixel = document.createElement('div');
-      pixel.style = `background-color: rgb(${x * 2}, 0, 0);`;
+      pixel.style = `background-color: ${palette[grid[x][y].color]};`;
       pixel.className = 'pixel';
       pixel.addEventListener('click', function () {
-        buyPixel(x, y, 1, 'Just bought this pixel');
+        buyPixel(x, y);
       });
       pixel.addEventListener('mouseover', () => {
         showPixelInfo(x, y);
@@ -144,7 +148,13 @@ async function setupGrid() {
 }
 
 function showPixelInfo(x, y) {
-  pixelInfo.innerHTML = `${x}:${y} color: ${grid[x][y].color} with message ${grid[x][y].message}`;
+  pixelInfo.innerHTML = `${x}:${y} color: ${grid[x][y].color} ${
+    grid[x][y].message?.length ? `with message ${grid[x][y].message}` : ''
+  } ${
+    grid[x][y].lastSellPrice > 0
+      ? `last sold for ${web3.utils.fromWei(grid[x][y].lastSellPrice, 'ether')}`
+      : ''
+  }`;
 }
 
 function displayPalette() {
@@ -154,6 +164,7 @@ function displayPalette() {
     pixel.className = 'palette_color';
     pixel.addEventListener('click', function () {
       console.log('Selected color', palette[i]);
+      selectedColor = i;
     });
     paletteDiv.appendChild(pixel);
   }
