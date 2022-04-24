@@ -18,7 +18,12 @@ let contract = null;
 let account = null;
 let grid = null;
 
+// Contants
 const PIXEL_SIZE = 10;
+
+// UI
+let pixelInfo = null;
+let paletteDiv = null;
 
 async function loadUser(accounts) {
   account = accounts[0];
@@ -27,7 +32,7 @@ async function loadUser(accounts) {
   document.getElementById('account').innerHTML = `Account: ${account}`;
   const accountBalance = await web3.eth.getBalance(account);
   const balanceInEth = web3.utils.fromWei(accountBalance, 'ether');
-  document.getElementById('balance').innerHTML = `Balance: ${balanceInEth}`;
+  document.getElementById('balance').innerHTML = `Balance: ${balanceInEth} ETH`;
 
   contract = new web3.eth.Contract(abi, cAddr);
 
@@ -103,6 +108,11 @@ function setupUI() {
 
   const displayGridBtn = document.getElementById('displayGrid');
   displayGridBtn.addEventListener('click', setupGrid);
+
+  pixelInfo = document.getElementById('pixelInfo');
+
+  paletteDiv = document.getElementById('palette');
+  displayPalette();
 }
 
 async function loadGrid() {
@@ -119,6 +129,9 @@ function renderGrid(grid) {
       pixel.addEventListener('click', function () {
         buyPixel(x, y, 1, 'Just bought this pixel');
       });
+      pixel.addEventListener('mouseover', () => {
+        showPixelInfo(x, y);
+      });
       root.appendChild(pixel);
     }
   }
@@ -128,4 +141,8 @@ async function setupGrid() {
   grid = await loadGrid();
   renderGrid(grid);
   root.style = `width: ${grid.length * PIXEL_SIZE}px`;
+}
+
+function showPixelInfo(x, y) {
+  pixelInfo.innerHTML = `${x}:${y} color: ${grid[x][y].color} with message ${grid[x][y].message}`;
 }

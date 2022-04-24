@@ -18,3 +18,19 @@
 .pixel:hover {
   opacity: 0.8;
 }
+
+#palette {
+  width: 160px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.palette_color {
+  width: 10px;
+  height: 10px;
+}
+
+.palette_color:hover {
+  opacity: 0.8;
+}
