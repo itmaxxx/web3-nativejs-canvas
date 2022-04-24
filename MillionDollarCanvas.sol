@@ -45,7 +45,7 @@ contract MillionPixelsCanvas {
       Pixel[] memory xGrid = new Pixel[](canvasSize);
 
       for (uint16 x = 0; x < canvasSize; x++) {
-        xGrid[x] = grid[x][y];
+        xGrid[x] = grid[y][x];
       }
 
       yGrid[y] = xGrid;

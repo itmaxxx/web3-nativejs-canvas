@@ -9,12 +9,12 @@
 // + current x:y position
 // - listen for buy event
 // - update user account balance
-// - fix get grid coords
+// + fix get grid coords
 
 const root = document.getElementById('root');
 
 const web3 = new Web3('https://rinkeby.infura.io/v3/94945f550e5c495ba9710ba0d0cffc7e');
-const cAddr = '0x6dC5D34e7A872b3c3ff60403f4DC87c5F4409733';
+const cAddr = '0x57fEd365970efa91eC8fA33DF2332b3A0C22a246';
 let contract = null;
 let account = null;
 let grid = null;
@@ -80,7 +80,7 @@ async function buyPixel(x, y) {
           {
             from: account,
             to: cAddr,
-            value: web3.utils.toWei('0.00000000000001', 'ether'),
+            value: web3.utils.toWei('10000', 'gwei'),
             data
           }
         ]
