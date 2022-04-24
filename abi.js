@@ -184,6 +184,58 @@ const abi = [
     type: 'function'
   },
   {
+    inputs: [],
+    name: 'getGrid',
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'address',
+            name: 'owner',
+            type: 'address'
+          },
+          {
+            internalType: 'uint8',
+            name: 'color',
+            type: 'uint8'
+          },
+          {
+            components: [
+              {
+                internalType: 'uint16',
+                name: 'x',
+                type: 'uint16'
+              },
+              {
+                internalType: 'uint16',
+                name: 'y',
+                type: 'uint16'
+              }
+            ],
+            internalType: 'struct MillionPixelsCanvas.Position',
+            name: 'position',
+            type: 'tuple'
+          },
+          {
+            internalType: 'string',
+            name: 'message',
+            type: 'string'
+          },
+          {
+            internalType: 'uint256',
+            name: 'lastSellPrice',
+            type: 'uint256'
+          }
+        ],
+        internalType: 'struct MillionPixelsCanvas.Pixel[][]',
+        name: '',
+        type: 'tuple[][]'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
     inputs: [
       {
         components: [

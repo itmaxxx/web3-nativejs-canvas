@@ -1,10 +1,10 @@
 // TODO:
 // + get contract balance
 // + send all contract money to me
-// - create get grid method in contract
-// - deploy new contract
-// - inject new contract
-// - display grid
+// + create get grid method in contract
+// + deploy new contract
+// + inject new contract
+// + display grid
 // - show pixel info on hover
 // - current x:y position
 // - listen for buy event
@@ -13,9 +13,12 @@
 const root = document.getElementById('root');
 
 const web3 = new Web3('https://rinkeby.infura.io/v3/94945f550e5c495ba9710ba0d0cffc7e');
-const cAddr = '0x765c9A34c725a84d6D89f9F7a2370317502e4C1F';
+const cAddr = '0x9938df4770da10B8CE49263A70400cfb0eF3A723';
 let contract = null;
 let account = null;
+let grid = null;
+
+const PIXEL_SIZE = 10;
 
 async function loadUser(accounts) {
   account = accounts[0];
@@ -97,16 +100,32 @@ function setupUI() {
 
   const withdrawContractBalanceBtn = document.getElementById('withdrawContractBalance');
   withdrawContractBalanceBtn.addEventListener('click', withdrawContractBalance);
+
+  const displayGridBtn = document.getElementById('displayGrid');
+  displayGridBtn.addEventListener('click', setupGrid);
 }
 
-for (let y = 0; y < 100; y++) {
-  for (let x = 0; x < 100; x++) {
-    const pixel = document.createElement('div');
-    pixel.style = `background-color: rgb(${x * 2}, 0, 0);`;
-    pixel.className = 'pixel';
-    pixel.addEventListener('click', function () {
-      buyPixel(x, y, 1, 'Just bought this pixel');
-    });
-    root.appendChild(pixel);
+async function loadGrid() {
+  const grid = await contract.methods.getGrid().call();
+  return grid;
+}
+
+function renderGrid(grid) {
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid.length; x++) {
+      const pixel = document.createElement('div');
+      pixel.style = `background-color: rgb(${x * 2}, 0, 0);`;
+      pixel.className = 'pixel';
+      pixel.addEventListener('click', function () {
+        buyPixel(x, y, 1, 'Just bought this pixel');
+      });
+      root.appendChild(pixel);
+    }
   }
+}
+
+async function setupGrid() {
+  grid = await loadGrid();
+  renderGrid(grid);
+  root.style = `width: ${grid.length * PIXEL_SIZE}px`;
 }
