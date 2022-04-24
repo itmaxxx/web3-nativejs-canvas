@@ -125,6 +125,7 @@ async function loadGrid() {
 }
 
 function renderGrid(grid) {
+  root.innerHTML = null;
   for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid.length; x++) {
       const pixel = document.createElement('div');
