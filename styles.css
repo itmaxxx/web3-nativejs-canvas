@@ -4,6 +4,8 @@
 }
 
 #root {
+  margin: 10px;
+  border: solid 10px #eee;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
@@ -17,6 +19,7 @@
 
 .pixel:hover {
   opacity: 0.8;
+  outline: 2px solid black;
 }
 
 #palette {
@@ -33,4 +36,5 @@
 
 .palette_color:hover {
   opacity: 0.8;
+  outline: 2px solid black;
 }

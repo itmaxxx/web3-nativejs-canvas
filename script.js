@@ -7,13 +7,16 @@
 // + display grid
 // + show pixel info on hover
 // + current x:y position
-// - listen for buy event
+// + listen for buy event
 // - update user account balance
 // + fix get grid coords
+// - last buys
+// - add bought pixel to grid, so the message is available immediately
+// - show selected color
 
 const root = document.getElementById('root');
 
-const web3 = new Web3('https://rinkeby.infura.io/v3/94945f550e5c495ba9710ba0d0cffc7e');
+const web3 = new Web3('wss://rinkeby.infura.io/ws/v3/94945f550e5c495ba9710ba0d0cffc7e');
 const cAddr = '0x57fEd365970efa91eC8fA33DF2332b3A0C22a246';
 let contract = null;
 let account = null;
@@ -35,14 +38,6 @@ async function loadUser(accounts) {
   const accountBalance = await web3.eth.getBalance(account);
   const balanceInEth = web3.utils.fromWei(accountBalance, 'ether');
   document.getElementById('balance').innerHTML = `Balance: ${balanceInEth} ETH`;
-
-  contract = new web3.eth.Contract(abi, cAddr);
-
-  //console.log(contract);
-
-  console.log(contract.methods);
-
-  //console.log(await contract.methods.grid(0, 0).call());
 }
 
 window.ethereum.on('accountsChanged', function (accounts) {
@@ -55,17 +50,48 @@ window.onload = async function () {
 
   if (window.ethereum) {
     try {
+      contract = new web3.eth.Contract(abi, cAddr);
+
+      // console.log(contract);
+
+      // console.log(contract.methods);
+
       const accounts = await ethereum.request({
         method: 'eth_requestAccounts'
       });
       loadUser(accounts);
 
       setupUI();
+      listenToEvents();
     } catch (error) {
       console.error(error);
     }
   }
 };
+
+async function listenToEvents() {
+  contract.events
+    .PixelBought()
+    .on('data', (event) => {
+      console.log('event', event);
+
+      const { _buyer, _color, _message, _position, _price } = event.returnValues;
+
+      // console.log({ _buyer, _color, _message, _position, _price });
+
+      addPixelToGrid(
+        _buyer,
+        parseInt(_position.x),
+        parseInt(_position.y),
+        _color,
+        _message,
+        _price
+      );
+    })
+    .on('changed', (changed) => console.log('changed', changed))
+    .on('error', (err) => console.warn('error', err))
+    .on('connected', (str) => console.log('connected', str));
+}
 
 async function buyPixel(x, y) {
   try {
@@ -111,6 +137,7 @@ function setupUI() {
 
   const displayGridBtn = document.getElementById('displayGrid');
   displayGridBtn.addEventListener('click', setupGrid);
+  setupGrid();
 
   pixelInfo = document.getElementById('pixelInfo');
 
@@ -120,7 +147,6 @@ function setupUI() {
 
 async function loadGrid() {
   const grid = await contract.methods.getGrid().call();
-  console.log(grid);
   return grid;
 }
 
@@ -130,11 +156,12 @@ function renderGrid(grid) {
     for (let x = 0; x < grid.length; x++) {
       const pixel = document.createElement('div');
       pixel.style = `background-color: ${palette[grid[x][y].color]};`;
+      pixel.id = `x-${x}_y-${y}`;
       pixel.className = 'pixel';
       pixel.addEventListener('click', function () {
         buyPixel(x, y);
       });
-      pixel.addEventListener('mouseover', () => {
+      pixel.addEventListener('mouseover', function () {
         showPixelInfo(x, y);
       });
       root.appendChild(pixel);
@@ -153,7 +180,7 @@ function showPixelInfo(x, y) {
     grid[x][y].message?.length ? `with message ${grid[x][y].message}` : ''
   } ${
     grid[x][y].lastSellPrice > 0
-      ? `last sold for ${web3.utils.fromWei(grid[x][y].lastSellPrice, 'ether')}`
+      ? `(last sold for ${web3.utils.fromWei(grid[x][y].lastSellPrice, 'ether')})`
       : ''
   }`;
 }
@@ -169,4 +196,29 @@ function displayPalette() {
     });
     paletteDiv.appendChild(pixel);
   }
+}
+
+function addPixelToGrid(owner, x, y, color, message, price) {
+  const newPixel = { owner, color, message, lastSellPrice: price, position: { x, y } };
+
+  console.log({ newPixel });
+
+  // let _grid = JSON.parse(JSON.stringify(grid));
+  // _grid[x][y] = newPixel;
+  grid[x][y] = newPixel;
+
+  // console.log(grid[x][y]);
+
+  // renderGrid(grid);
+
+  const pixel = document.getElementById(`x-${x}_y-${y}`);
+  pixel.style = `background-color: ${palette[color]};`;
+  // pixel.removeEventListener('click');
+  // pixel.removeEventListener('mouseover');
+  // pixel.addEventListener('click', function () {
+  //   buyPixel(x, y);
+  // });
+  // pixel.addEventListener('mouseover', function () {
+  //   showPixelInfo(x, y);
+  // });
 }
