@@ -11,7 +11,7 @@
 // - update user account balance
 // + fix get grid coords
 // - last buys
-// - add bought pixel to grid, so the message is available immediately
+// + add bought pixel to grid, so the message is available immediately
 // - show selected color
 
 const root = document.getElementById('root');
@@ -150,6 +150,14 @@ async function loadGrid() {
   return grid;
 }
 
+function handleBuyPixel(x, y) {
+  buyPixel(x, y);
+}
+
+function handleShowPixelInfo(x, y) {
+  showPixelInfo(x, y);
+}
+
 function renderGrid(grid) {
   root.innerHTML = null;
   for (let y = 0; y < grid.length; y++) {
@@ -158,12 +166,8 @@ function renderGrid(grid) {
       pixel.style = `background-color: ${palette[grid[x][y].color]};`;
       pixel.id = `x-${x}_y-${y}`;
       pixel.className = 'pixel';
-      pixel.addEventListener('click', function () {
-        buyPixel(x, y);
-      });
-      pixel.addEventListener('mouseover', function () {
-        showPixelInfo(x, y);
-      });
+      pixel.addEventListener('click', () => handleBuyPixel(x, y));
+      pixel.addEventListener('mouseover', () => handleShowPixelInfo(x, y));
       root.appendChild(pixel);
     }
   }
@@ -199,26 +203,26 @@ function displayPalette() {
 }
 
 function addPixelToGrid(owner, x, y, color, message, price) {
-  const newPixel = { owner, color, message, lastSellPrice: price, position: { x, y } };
+  // This hack needed to update pixel in grid
+  // Here we copy create grid deep copy and edit our pixel
+  let _grid = [];
 
-  console.log({ newPixel });
+  for (let x = 0; x < grid.length; x++) {
+    _grid[x] = [...grid[x]];
+  }
 
-  // let _grid = JSON.parse(JSON.stringify(grid));
-  // _grid[x][y] = newPixel;
-  grid[x][y] = newPixel;
+  _grid[x][y] = [owner, color, message, price, [x, y]];
+  let pixel = _grid[x][y];
+  pixel.owner = owner;
+  pixel.color = color;
+  pixel.message = message;
+  pixel.lastSellPrice = price;
+  pixel.position = { x, y };
 
-  // console.log(grid[x][y]);
+  grid = _grid;
 
-  // renderGrid(grid);
+  console.log(grid[x][y]);
 
-  const pixel = document.getElementById(`x-${x}_y-${y}`);
-  pixel.style = `background-color: ${palette[color]};`;
-  // pixel.removeEventListener('click');
-  // pixel.removeEventListener('mouseover');
-  // pixel.addEventListener('click', function () {
-  //   buyPixel(x, y);
-  // });
-  // pixel.addEventListener('mouseover', function () {
-  //   showPixelInfo(x, y);
-  // });
+  const pixelEl = document.getElementById(`x-${x}_y-${y}`);
+  pixelEl.style = `background-color: ${palette[color]};`;
 }
