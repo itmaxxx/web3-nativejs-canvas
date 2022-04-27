@@ -13,6 +13,11 @@
 // - last buys
 // + add bought pixel to grid, so the message is available immediately
 // - show selected color
+// - improve buy pixel experience
+// - animate when new pixel bought
+// - buy already taken pixels for higher price
+// - top pixels by price
+// - implement grid caching with nodejs and redis
 
 const root = document.getElementById('root');
 
@@ -32,7 +37,6 @@ let paletteDiv = null;
 
 async function loadUser(accounts) {
   account = accounts[0];
-  console.log({ account });
 
   document.getElementById('account').innerHTML = `Account: ${account}`;
   const accountBalance = await web3.eth.getBalance(account);
@@ -41,7 +45,6 @@ async function loadUser(accounts) {
 }
 
 window.ethereum.on('accountsChanged', function (accounts) {
-  console.log('accountChanged');
   loadUser(accounts);
 });
 
@@ -51,10 +54,6 @@ window.onload = async function () {
   if (window.ethereum) {
     try {
       contract = new web3.eth.Contract(abi, cAddr);
-
-      // console.log(contract);
-
-      // console.log(contract.methods);
 
       const accounts = await ethereum.request({
         method: 'eth_requestAccounts'
@@ -77,8 +76,6 @@ async function listenToEvents() {
 
       const { _buyer, _color, _message, _position, _price } = event.returnValues;
 
-      // console.log({ _buyer, _color, _message, _position, _price });
-
       addPixelToGrid(
         _buyer,
         parseInt(_position.x),
@@ -97,7 +94,6 @@ async function buyPixel(x, y) {
   try {
     const message = prompt('Enter message you would like to share');
     const data = await contract.methods.buyPixel([x, y], selectedColor, message).encodeABI();
-    console.log('buyPixel data', data);
 
     window.ethereum
       .request({
@@ -220,8 +216,6 @@ function addPixelToGrid(owner, x, y, color, message, price) {
   pixel.position = { x, y };
 
   grid = _grid;
-
-  console.log(grid[x][y]);
 
   const pixelEl = document.getElementById(`x-${x}_y-${y}`);
   pixelEl.style = `background-color: ${palette[color]};`;
